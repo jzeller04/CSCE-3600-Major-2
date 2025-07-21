@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char* argv[])
 {
@@ -17,6 +18,14 @@ int main(int argc, char* argv[])
         else
         {
             printf("No PATH variables\n");
+        }
+    }
+    else if(argc == 3)
+    {
+        if(strcmp(argv[1], "+") == 0)
+        {
+            
+            setenv("PATH", argv[2], 1);
         }
     }
 
