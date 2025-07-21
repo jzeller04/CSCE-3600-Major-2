@@ -1,58 +1,99 @@
+// shell.c
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
-#define BUFFER_SIZE 512
+#define MAX_LINE 514
+#define MAX_ARGS 100
 
-// NOTE TO GROUP MEMBERS!!! My code does NOT work yet 🤣 but feel free to edit this with your parts of the project. We dont need to do the extra parts since we have only 3 ppl
+void parse_command(char *line, char **args) {
+    char *token = strtok(line, " \t\r\n");
+    int i = 0;
+    while (token && i < MAX_ARGS - 1) {
+        args[i++] = token;
+        token = strtok(NULL, " \t\r\n");
+    }
+    args[i] = NULL;
+}
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
+    FILE *input = stdin;
+    char line[MAX_LINE];
 
-    // implement exit feature to stop this probably
+    if (argc > 2) {
+        fprintf(stderr, "Usage: %s [batchFile]\n", argv[0]);
+        exit(1);
+    }
 
-    char *command[100];
+    if (argc == 2) {
+        input = fopen(argv[1], "r");
+        if (!input) {
+            perror("Error opening batch file");
+            exit(1);
+        }
+    }
 
-    if(argc > 1)
-        {
-            if(strcmp(argv[1], "path") == 0 && argc > 1)
-            {
-                // create pipe/fork
-                FILE *path_pipe = popen("./path", "r");
-                if(!path_pipe)
-                {
-                    perror("Pipe failed\n");
-                    exit(EXIT_FAILURE);
-                }
-                // run path inside of the fork and change the path variables of the shell
-                    char BUFFER[BUFFER_SIZE];
-                    if(fgets(BUFFER, BUFFER_SIZE, path_pipe) != NULL)
-                    {
-                        // update shell path
-                        if(setenv("PATH", BUFFER, 1) !=0 )
-                        {
-                            perror("Couldn't use setenv\n");
-                            exit(EXIT_FAILURE);
-                        }
-                        else
-                        {
-                            printf("Updated shell PATH\n: %s", getenv("PATH"));
-                        }
-                    }
-                    pclose(path_pipe);
-                    
-                    
-                    // execlp("./path","./path", (char *)NULL);
-                }
-                else
-                {
-                    //printf("Parent\n");
-                }
+    while (1) {
+        if (input == stdin)
+            printf("newshell> ");
 
+        if (!fgets(line, MAX_LINE, input))
+            break;
+
+        if (strlen(line) > 512) {
+            fprintf(stderr, "Input too long\n");
+            continue;
+        }
+
+        // Split by ;
+        char *commands[10];
+        int count = 0;
+        char *token = strtok(line, ";");
+        while (token && count < 10) {
+            commands[count++] = strdup(token);
+            token = strtok(NULL, ";");
+        }
+
+        int should_exit = 0;
+
+        for (int i = 0; i < count; i++) {
+            char *args[MAX_ARGS];
+            parse_command(commands[i], args);
+
+            if (args[0] == NULL) continue;
+
+            // === Built-in exit command ===
+            if (strcmp(args[0], "exit") == 0) {
+                should_exit = 1;
+                continue;
             }
-        
-    
+
+            pid_t pid = fork();
+            if (pid == 0) {
+                // Try each directory in PATH
+                char path[256];
+                snprintf(path, sizeof(path), "/bin/%s", args[0]);
+                execv(path, args);
+                perror("Command failed");
+                exit(1);
+            } else {
+                waitpid(pid, NULL, 0);
+            }
+        }
+
+        if (should_exit)
+            break;
+    }
+
+    if (input != stdin)
+        fclose(input);
 
     return 0;
 }
+
+        
+    
+
+ 
