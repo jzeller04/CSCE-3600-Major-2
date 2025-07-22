@@ -70,6 +70,80 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
+            // Built in PATH command
+            if(strcmp(args[0], "path") == 0)
+            {
+                char* path_vars = getenv("PATH");
+                if(args[1] == NULL)
+                {
+
+                    if(path_vars)
+                    {
+                        printf("PATH Variables:\n%s\n", path_vars);
+                    }
+                    else
+                    {
+                        printf("No PATH variables\n");
+                    } 
+                } else if (strcmp(args[1], "+") == 0 && args[2] != NULL)
+                {
+                    size_t length = strlen(args[2]) + strlen(path_vars) + 2; // add xtra 2 for colons
+                    char* new_path_vars = malloc(length);
+                    if(new_path_vars == NULL)
+                    {
+                        perror("malloc fail\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    strcpy(new_path_vars, args[2]);
+                    strcat(new_path_vars, ":"); // add colon
+                    strcat(path_vars, ":");
+                    strcat(path_vars, new_path_vars);
+
+                    
+                    if(setenv("PATH", path_vars, 1) != 0)
+                    {
+                        perror("Could not change path variables\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    printf("Added: %s to PATH variables\n", args[2]);
+
+                    free(new_path_vars);
+                }
+                else if (strcmp(args[1], "-") == 0 && args[2] != NULL)
+                {
+                    char* new_path = malloc(strlen(path_vars) + 1);
+                    char* remove_var = malloc(strlen(args[2] + 1));
+                    strcpy(remove_var, ":");
+                    strcat(remove_var, args[2]);
+                    strcat(remove_var, ":");
+                    if(new_path == NULL)
+                    {
+                        perror("Could not copy PATH\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    strcpy(new_path, path_vars);
+                    char* substring = strstr(new_path,remove_var);
+                    if(substring != NULL)
+                    {
+                        memmove(
+                            substring,
+                            substring + strlen(remove_var),
+                            strlen(substring + strlen(remove_var)) + 1 
+                        ); // + 1 is for null character
+                    }
+
+                    if(setenv("PATH", new_path, 1) != 0)
+                    {
+                        perror("Could not change path variables\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    printf("Removed: %s from PATH variables\n", args[2]);
+
+                }
+                
+                
+            }
+
             pid_t pid = fork();
             if (pid == 0) {
                 // Try each directory in PATH
