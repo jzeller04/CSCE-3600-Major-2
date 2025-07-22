@@ -75,6 +75,21 @@ int main(int argc, char *argv[]) {
 
             if (args[0] == NULL) continue;
 
+			if (strcmp(args[0], "cd") == 0)
+			{
+				if(args[1] == NULL)
+				{
+					if(chdir(getenv("HOME")) != 0) perror("cd command to HOME failed!");
+				}
+				else
+				{
+					if(chdir(args[1]) != 0) perror("cd path command failed!");
+				}
+				
+				continue;
+			}
+
+					
             // === Built-in exit command ===
             if (strcmp(args[0], "exit") == 0) {
                 should_exit = 1;
@@ -187,6 +202,51 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
+			char inFile[514] = {0};
+			char outFile[514] = {0};
+
+			// Scan argument for < or >
+			int newArgC = 0;
+			char *newArg[MAX_ARGS];
+			for (int i = 0; args[i] != NULL; i++) 
+			{
+				if (strcmp(args[i], "<") == 0) 
+				{
+					if (args[i+1]) 
+					{
+						strcpy(inFile, args[i+1]);
+						i++; // skip filename
+					} else {
+						fprintf(stderr, "Syntax error '<'\n");
+						newArg[0] = NULL;
+						break;
+					}
+				}
+				else if (strcmp(args[i], ">") == 0) 
+				{
+					if (args[i+1]) 
+					{
+						strcpy(outFile, args[i+1]);
+						i++; // skip filename
+					} 
+					else 
+					{
+						fprintf(stderr, "Syntax error '>'\n");
+						newArg[0] = NULL;
+						break;
+					}
+				}
+				else 
+				{
+					newArg[newArgC++] = args[i];
+				}
+			}
+			newArg[newArgC] = NULL;
+
+			if (newArg[0] == NULL) 
+			{
+				continue;
+			}
 
             pid_t pid = fork();
             if (pid == 0) {
