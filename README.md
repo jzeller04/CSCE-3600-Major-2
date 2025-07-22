@@ -1,4 +1,4 @@
-# Major 1: Bitwise Operations Menu Program
+# Major 2
 
 # Team Members
 - Aasmi Joshi 
