@@ -6,7 +6,7 @@
 - Reagan Duke
 
 # Responsibilities
-- Aasmi Joshi -
+- Aasmi Joshi -Implemented the built-in `exit` command (#2) 
 - Justin Zeller - Both Part 3s - Built-in path command and Signal Handling and Terminal Control (`shell.c`)
 - Reagan Duke -
 
