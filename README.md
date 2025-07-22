@@ -8,7 +8,7 @@
 # Responsibilities
 - Aasmi Joshi -Implemented the built-in `exit` command (#2) 
 - Justin Zeller - Both Part 3s - Built-in path command and Signal Handling and Terminal Control (`shell.c`)
-- Reagan Duke - Executing the built-in 'cd' command and the I/O redirection (#1)
+- Reagan Duke - Executing the built-in 'cd' command and the I/O redirection ['shell.c'] (#1)
 
 All members worked together to review, test, and finalize the project.
 
